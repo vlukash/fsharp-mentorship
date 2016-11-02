@@ -1,4 +1,4 @@
-﻿namespace Parser
+namespace Parser
 
 type Result<'T> =
      | Success of 'T*string 
@@ -10,7 +10,7 @@ module SingleChar =
     open System
 
     let parseFirstCharHardcodedA str =
-        let charToMatch = 'a'
+        let charToMatch = 'a' // mrange: This can be a parameter obviously but even more powerful would be to have a test function parameter
         if String.IsNullOrEmpty(str) then
             Failure "Input is empty"
         else
