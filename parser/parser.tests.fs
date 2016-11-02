@@ -5,9 +5,13 @@ module SingleCrar =
     open SingleChar
 
     [<Fact>]
-    let parse_non_empty_string_should_return_success_and_first_char() =
-        Assert.Equal(parseChar "abc", Success('a'))
+    let ``non empty string, first char is 'a', should return success and remaining string``() =
+        Assert.Equal(parseFirstCharHardcodedA "abc", Success('a',"bc"))
 
     [<Fact>]
-    let parse_empty_string_should_return_failure() =
-        Assert.Equal(parseChar "", Failure("Input is empty"))
+    let ``empty string should return failure``() =
+        Assert.Equal(parseFirstCharHardcodedA "", Failure("Input is empty"))
+
+    [<Fact>]
+    let ``non empty string, first char is not 'a', should return failure``() =
+        Assert.Equal(parseFirstCharHardcodedA "bca", Failure("Expected character is: 'a' but received 'b'"))
