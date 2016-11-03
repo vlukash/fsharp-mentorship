@@ -6,6 +6,8 @@ type Result<'T> =
 
 type Parser<'T> = string -> int -> Result<'T>
 
+// mrange: You don't want a specific type for single char parsers. In this case it doesn't matter because it's an alias
+// mrange: A parser is function that given a string and a position optionally produces a value (maybe a char) and a position
 type SingleCharParser = string -> Result<char>
 
 module SingleChar = 
@@ -27,7 +29,8 @@ module SingleChar =
         parseCharInner
 
     // combinator function that runs two parsers and returns the result as a pair
-    let pair l r input pos = 
+    let pair l r input pos =
+        // mrange: looks about right but see my comment below
         // call l parser
         match l input pos with
             | Success (l_result, l_pos) -> 
@@ -36,20 +39,22 @@ module SingleChar =
                     | Success (r_result, r_pos) -> 
                         Success ((l_result, r_result), r_pos) // returning combined result and updated position
                     | Failure (err_msg, pos) -> 
-                        Failure (err_msg, pos)
+                        Failure (err_msg, pos) // mrange: I would use l_pos here
             | Failure (err_msg, pos) -> 
                 Failure (err_msg, pos)
 
     // combinator function that takes two parsers and runs the first successful result
     let orElse l r input pos = 
         // call l parser
+        // mrange: Note my comments on the error results is difficult to resolve with our current parser type
+        // mrange: so I say ignore them but perhaps remember it for later.
         match l input pos with
             | Success (l_result, l_pos) -> 
                 Success (l_result, l_pos)                 
             | Failure (err_msg, l_pos) -> 
                 // call r parser icase if r parser failed
-                match r input l_pos with
+                match r input l_pos with // mrange: You want to use pos here over l_pos.
                     | Success (r_result, r_pos) -> 
-                        Success (r_result, r_pos)  
+                        Success (r_result, r_pos) // mrange: Here we are now discarding an error result which can be problematic
                     | Failure (err_msg, pos) -> 
-                        Failure (err_msg, pos)
+                        Failure (err_msg, pos) // mrange: Actually here it would be correct to merge teh error results.
