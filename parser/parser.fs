@@ -1,22 +1,24 @@
 ﻿namespace Parser
 
 type Result<'T> =
-     | Success of 'T*string 
-     | Failure of string 
+     | Success of 'T*int 
+     | Failure of string list*int
+
+type Parser<'T> = string -> int -> Result<'T>
 
 type SingleCharParser = string -> Result<char>
 
 module SingleChar = 
     open System
 
-    let parseFirstCharHardcodedA str =
+    let parseFirstCharHardcodedA (input: string) (pos: int): Result<char> =
         let charToMatch = 'a'
-        if String.IsNullOrEmpty(str) then
-            Failure "Input is empty"
+        if String.IsNullOrEmpty(input) then
+            Failure (["Input is empty"], 0)
         else
-            let firstChar = str.[0]
+            let firstChar = input.[0]
             if firstChar = charToMatch then
-                Success(charToMatch,str.[1..])
+                Success(charToMatch, pos+1)
             else
-                let errorMessage = sprintf "Expected character is: '%c' but received '%c'" charToMatch firstChar
-                Failure errorMessage
+                let errorMessage = sprintf "Expected character is: '%c' but received '%c' at position %i" charToMatch firstChar pos
+                Failure ([errorMessage], pos)
