@@ -58,3 +58,40 @@ module SingleCrar =
 
         let result = combinedParser "" 0
         Assert.Equal(result,  Failure(["Input is empty"], 0))
+
+    // orElse combinator tests 
+    [<Fact>]
+    let ``combines two parsers and runs only first one``() =
+        let parser_a = parseChar 'a'
+        let parser_b = parseChar 'b'
+        let combinedParser = orElse parser_a parser_b
+
+        let result = combinedParser "abc" 0
+        Assert.Equal(result,  Success('a', 1))
+
+    [<Fact>]
+    let ``combines two parsers, first fails, second succeeded``() =
+        let parser_a = parseChar 'a'
+        let parser_b = parseChar 'b'
+        let combinedParser = orElse parser_a parser_b
+
+        let result = combinedParser "bdc" 0
+        Assert.Equal(result,  Success('b', 1))
+
+    [<Fact>]
+    let ``both fail, error from second parser in the chain``() =
+        let parser_a = parseChar 'a'
+        let parser_b = parseChar 'b'
+        let combinedParser = orElse parser_a parser_b
+
+        let result = combinedParser "cde" 0
+        Assert.Equal(result,  Failure(["Expected character is: 'b' but received 'c' at position 0"], 0))
+
+    [<Fact>]
+    let ``orElse combinator should fail on empty input string``() =
+        let parser_a = parseChar 'a'
+        let parser_b = parseChar 'b'
+        let combinedParser = orElse parser_a parser_b
+
+        let result = combinedParser "" 0
+        Assert.Equal(result,  Failure(["Input is empty"], 0))

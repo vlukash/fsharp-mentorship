@@ -39,3 +39,17 @@ module SingleChar =
                         Failure (err_msg, pos)
             | Failure (err_msg, pos) -> 
                 Failure (err_msg, pos)
+
+    // combinator function that takes two parsers and runs the first successful result
+    let orElse l r input pos = 
+        // call l parser
+        match l input pos with
+            | Success (l_result, l_pos) -> 
+                Success (l_result, l_pos)                 
+            | Failure (err_msg, l_pos) -> 
+                // call r parser icase if r parser failed
+                match r input l_pos with
+                    | Success (r_result, r_pos) -> 
+                        Success (r_result, r_pos)  
+                    | Failure (err_msg, pos) -> 
+                        Failure (err_msg, pos)
