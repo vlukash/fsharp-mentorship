@@ -8,7 +8,7 @@ type Parser<'T> = string -> int -> Result<'T>
 
 // mrange: You don't want a specific type for single char parsers. In this case it doesn't matter because it's an alias
 // mrange: A parser is function that given a string and a position optionally produces a value (maybe a char) and a position
-type SingleCharParser = string -> Result<char>
+// vlukash: removed
 
 module SingleChar = 
     open System
@@ -38,10 +38,11 @@ module SingleChar =
                 match r input l_pos with
                     | Success (r_result, r_pos) -> 
                         Success ((l_result, r_result), r_pos) // returning combined result and updated position
-                    | Failure (err_msg, pos) -> 
-                        Failure (err_msg, pos) // mrange: I would use l_pos here
-            | Failure (err_msg, pos) -> 
-                Failure (err_msg, pos)
+                    | Failure (err_msg, r_pos) -> 
+                        Failure (err_msg, l_pos) // mrange: I would use l_pos here      
+                                                 // vlukash: fixed, I've missed that names are the same in this result and in the first match                                    
+            | Failure (err_msg, l_pos) -> 
+                Failure (err_msg, l_pos)
 
     // combinator function that takes two parsers and runs the first successful result
     let orElse l r input pos = 
@@ -51,10 +52,12 @@ module SingleChar =
         match l input pos with
             | Success (l_result, l_pos) -> 
                 Success (l_result, l_pos)                 
-            | Failure (err_msg, l_pos) -> 
+            | Failure (l_err_msg, l_pos) -> 
                 // call r parser icase if r parser failed
-                match r input l_pos with // mrange: You want to use pos here over l_pos.
+                match r input pos with // mrange: You want to use pos here over l_pos.
                     | Success (r_result, r_pos) -> 
                         Success (r_result, r_pos) // mrange: Here we are now discarding an error result which can be problematic
-                    | Failure (err_msg, pos) -> 
-                        Failure (err_msg, pos) // mrange: Actually here it would be correct to merge teh error results.
+                    | Failure (r_err_msg, pos) -> 
+                        Failure (l_err_msg @ r_err_msg, pos) // mrange: Actually here it would be correct to merge teh error results.
+                                                             // vlukash: concatenating two lists by using @
+                                                             // vlukash: but now for an empty input it'll return ["Input is empty";"Input is empty"]. But probably that's fine
