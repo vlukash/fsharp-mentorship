@@ -95,3 +95,28 @@ module SingleCrar =
 
         let result = combinedParser "" 0
         Assert.Equal(result,  Failure(["Input is empty";"Input is empty"], 0))
+
+    // map function tests 
+    [<Fact>]
+    let ``map function should convert char parser's result to int``() =
+        // create char to int mapper
+        let mapCharToInt = map converterFunc
+
+        // create parser that parses char '2'
+        let parser_2 = parseChar '2'
+
+        // run parser and convert result to Int
+        let result = mapCharToInt parser_2 "2abc" 0 
+        Assert.Equal(result,  Success(2, 1))
+
+    [<Fact>]
+    let ``map function fails if char parser fails``() =
+        // create char to int mapper
+        let mapCharToInt = map converterFunc
+
+        // create parser that parses char '2'
+        let parser_2 = parseChar '2'
+
+        // run parser and convert result to Int
+        let result = mapCharToInt parser_2 "abc2" 0 
+        Assert.Equal(result,  Failure(["Expected character is: '2' but received 'a' at position 0"], 0))

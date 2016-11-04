@@ -61,3 +61,17 @@ module SingleChar =
                         Failure (l_err_msg @ r_err_msg, pos) // mrange: Actually here it would be correct to merge teh error results.
                                                              // vlukash: concatenating two lists by using @
                                                              // vlukash: but now for an empty input it'll return ["Input is empty";"Input is empty"]. But probably that's fine
+
+    // function that maps the result of parser into another type
+    let map converterFunc = 
+        let mapInner parser input pos =
+            match parser input pos with
+                | Success (result, s_pos) ->
+                    let convertedValue = converterFunc result
+                    Success (convertedValue, s_pos)
+                | Failure (err_msg, f_pos) ->
+                    Failure (err_msg, f_pos)
+        mapInner
+
+    // converts char to int
+    let converterFunc = fun ch -> string ch |> int
