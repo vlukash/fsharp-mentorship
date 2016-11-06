@@ -76,3 +76,18 @@ module Parser =
                   Success (convertedValue, s_pos)
               | Failure (err_msg, f_pos) ->
                   Failure (err_msg, f_pos)
+
+    // function that checks the input element for validity
+    let check (filterFunc : 'T -> bool) (p : Parser<'T>) : Parser<'T> = 
+        fun input pos ->
+            let c = input.[pos]
+            match filterFunc c with
+                | true ->
+                    match p input pos with
+                        | Success (convertedValue, s_pos) ->
+                            Success (convertedValue, s_pos) 
+                        | Failure (err_msg, f_pos) ->
+                            Failure (err_msg, f_pos)
+                | false ->
+                    let errMsg = sprintf "Invalid input: '%c' at position %i" c pos
+                    Failure ([errMsg], pos)

@@ -3,6 +3,7 @@
 module SingleCrar = 
     open Xunit 
     open Parser
+    open System
 
     [<Fact>]
     let ``empty string should return failure and 0 as a pos value``() =
@@ -123,3 +124,37 @@ module SingleCrar =
         // run parser and convert result to Int
         let result = mapCharToInt parser_2 "abc2" 0 
         Assert.Equal(result,  Failure(["Expected character is: '2' but received 'a' at position 0"], 0))
+
+    // 'check' function tests
+    [<Fact>]
+    let ``check function should parse digit``() =
+        let parser_0 = singleChar '0'
+        // digit parser
+        let digit = parser_0 |> check Char.IsDigit
+        let result = digit "0abc" 0 
+        Assert.Equal(result,  Success('0', 1))
+
+    [<Fact>]
+    let ``check function should parse digit and map to int``() =
+        let parser_0 = singleChar '0'
+        // integer parser
+        let integer = parser_0 |> check Char.IsDigit |> map (fun ch -> int ch - int '0')
+        // run parser and convert result to Int
+        let result = integer "0abc" 0 
+        Assert.Equal(result,  Success(0, 1))
+
+    [<Fact>]
+    let ``check function fail due to the invalid input type``() =
+        let parser_0 = singleChar '0'
+        // digit parser
+        let digit = parser_0 |> check Char.IsDigit
+        let result = digit "abc0" 0 
+        Assert.Equal(result,  Failure(["Invalid input: 'a' at position 0"], 0))
+
+    [<Fact>]
+    let ``check function succedded but inner parser fais``() =
+        let parser_a = singleChar 'a'
+        // digit parser
+        let digit = parser_a |> check Char.IsDigit
+        let result = digit "0abc" 0 
+        Assert.Equal(result,  Failure(["Expected character is: 'a' but received '0' at position 0"], 0))
