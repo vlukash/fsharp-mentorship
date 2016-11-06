@@ -145,16 +145,16 @@ module SingleCrar =
 
     [<Fact>]
     let ``check function fail due to the invalid input type``() =
+        let parser_a = singleChar 'a'
+        // digit parser
+        let digit = parser_a |> check Char.IsDigit
+        let result = digit "abc0" 0 
+        Assert.Equal(result,  Failure(["Invalid input: ''a'' at position 0"], 0))
+
+    [<Fact>]
+    let ``check inner parser fais``() =
         let parser_0 = singleChar '0'
         // digit parser
         let digit = parser_0 |> check Char.IsDigit
         let result = digit "abc0" 0 
-        Assert.Equal(result,  Failure(["Invalid input: 'a' at position 0"], 0))
-
-    [<Fact>]
-    let ``check function succedded but inner parser fais``() =
-        let parser_a = singleChar 'a'
-        // digit parser
-        let digit = parser_a |> check Char.IsDigit
-        let result = digit "0abc" 0 
-        Assert.Equal(result,  Failure(["Expected character is: 'a' but received '0' at position 0"], 0))
+        Assert.Equal(result,  Failure(["Expected character is: '0' but received 'a' at position 0"], 0))
