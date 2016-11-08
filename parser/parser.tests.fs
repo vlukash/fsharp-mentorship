@@ -86,7 +86,7 @@ module SingleCrar =
         let combinedParser = orElse parser_a parser_b
 
         let result = combinedParser "cde" 0
-        Assert.Equal(result,  Failure(["Expected character is: 'a' but received 'c' at position 0";"Expected character is: 'b' but received 'c' at position 0"], 0))
+        Assert.Equal(result,  Failure(["Expected character is: 'b' but received 'c' at position 0"], 0))
 
     [<Fact>]
     let ``orElse combinator should fail on empty input string``() =
@@ -95,7 +95,7 @@ module SingleCrar =
         let combinedParser = orElse parser_a parser_b
 
         let result = combinedParser "" 0
-        Assert.Equal(result,  Failure(["Input is empty";"Input is empty"], 0))
+        Assert.Equal(result,  Failure(["Input is empty"], 0))
 
     let converterFunc c = int c - int '0'
 
@@ -178,3 +178,16 @@ module SingleCrar =
         // run parser and convert result to Int
         let result = manyP "baabc0" 0
         Assert.Equal(result,  Failure(["Expected character is: 'a' but received 'b' at position 0"], 0))
+
+    // anyOf function tests
+    [<Fact>]
+    let ``anyOf parses any literal``() =
+        let literalP = anyOf ['a'..'z']
+        let result = literalP "baabc0" 0
+        Assert.Equal(result,  Success('b', 1))
+
+    [<Fact>]
+    let ``anyOf fails if input is not it the allowed range``() =
+        let literalP = anyOf ['a'..'z']
+        let result = literalP "01aabc" 0
+        Assert.Equal(result,  Failure(["Expected character is: 'z' but received '0' at position 0"], 0))

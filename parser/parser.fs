@@ -61,11 +61,12 @@ module Parser =
                         | Success (r_result, r_pos) ->
                             Success (r_result, r_pos) // mrange: Here we are now discarding an error result which can be problematic
                         | Failure (r_err_msg, pos) ->
-                            Failure (l_err_msg @ r_err_msg, pos) // mrange: Actually here it would be correct to merge teh error results.
+                            Failure (r_err_msg, pos) // mrange: Actually here it would be correct to merge teh error results.
                                                                  // vlukash: concatenating two lists by using @
                                                                  // vlukash: but now for an empty input it'll return ["Input is empty";"Input is empty"]. But probably that's fine
                                                                  // mrange: Merging two errors isn't as easy as this if the positions are different. Then a decent approximization could be
                                                                  //         to use the error result for the parser that got furtherest
+                                                                 // vlukash: now returning only one error from r parser to make anyOf function work
 
     // function that maps the result of parser into another type
     let map converterFunc (p : Parser<'T>) : Parser<'U> =
@@ -106,4 +107,8 @@ module Parser =
                     | [] -> Failure (errMsg, pos) // if 0 mathes then return failure
                     | _ -> Success (resultList, pos) // in all other cases - return success with results list
             matchElement p input pos resultList
+
+    // function that tries to parse any char from the given list
+    let anyOf (charRange : char list) = 
+        charRange |> List.map singleChar |> List.reduce orElse
 
