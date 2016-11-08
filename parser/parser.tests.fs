@@ -187,6 +187,12 @@ module SingleCrar =
         Assert.Equal(result,  Success('b', 1))
 
     [<Fact>]
+    let ``anyOf parses any digit``() =
+        let digitP = anyOf ['0'..'9']
+        let result = digitP "012abc" 0
+        Assert.Equal(result,  Success('0', 1))
+
+    [<Fact>]
     let ``anyOf fails if input is not it the allowed range``() =
         let literalP = anyOf ['a'..'z']
         let result = literalP "01aabc" 0
