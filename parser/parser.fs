@@ -91,3 +91,19 @@ module Parser =
                             Failure ([errMsg], pos)
                 | Failure (err_msg, pos) ->
                     Failure (err_msg, pos)
+
+    // function that repeats a parser until it fails and returns the result as a list
+    let many (p : Parser<'T>) : Parser<'T list> = 
+        fun input pos ->
+            let resultList = []
+            let rec matchElement p input pos resultList = 
+                match p input pos with
+                | Success (result, s_pos) ->
+                    let newList = result :: resultList
+                    matchElement p input s_pos newList // call recursively
+                | Failure (errMsg, f_pos) ->
+                    match resultList with
+                    | [] -> Failure (errMsg, pos) // if 0 mathes then return failure
+                    | _ -> Success (resultList, pos) // in all other cases - return success with results list
+            matchElement p input pos resultList
+

@@ -158,3 +158,23 @@ module SingleCrar =
         let digit = parser_0 |> check Char.IsDigit
         let result = digit "abc0" 0 
         Assert.Equal(result,  Failure(["Expected character is: '0' but received 'a' at position 0"], 0))
+
+    // 'many' function tests
+    // 'many' function repeats a parser until it fails and returns the result as a list
+    [<Fact>]
+    let ``many function should parse 3 chars and return results as a list``() =
+        let parser_a = singleChar 'a'
+        // 'many' parser
+        let manyP = parser_a |> many
+        // run parser and convert result to Int
+        let result = manyP "aaabc0" 0
+        Assert.Equal(result,  Success(['a';'a';'a'], 3))
+
+    [<Fact>]
+    let ``many function should fail if internal parser fails on the first try``() =
+        let parser_a = singleChar 'a'
+        // 'many' parser
+        let manyP = parser_a |> many
+        // run parser and convert result to Int
+        let result = manyP "baabc0" 0
+        Assert.Equal(result,  Failure(["Expected character is: 'a' but received 'b' at position 0"], 0))
