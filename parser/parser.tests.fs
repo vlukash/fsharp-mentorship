@@ -182,18 +182,27 @@ module SingleCrar =
     // anyOf function tests
     [<Fact>]
     let ``anyOf parses any literal``() =
-        let literalP = anyOf ['a'..'z']
-        let result = literalP "baabc0" 0
+        let literal = anyOf ['a'..'z']
+        let result = literal "baabc0" 0
         Assert.Equal(result,  Success('b', 1))
 
     [<Fact>]
     let ``anyOf parses any digit``() =
-        let digitP = anyOf ['0'..'9']
-        let result = digitP "012abc" 0
+        let digit = anyOf ['0'..'9']
+        let result = digit "012abc" 0
         Assert.Equal(result,  Success('0', 1))
 
     [<Fact>]
     let ``anyOf fails if input is not it the allowed range``() =
-        let literalP = anyOf ['a'..'z']
-        let result = literalP "01aabc" 0
+        let literal = anyOf ['a'..'z']
+        let result = literal "01aabc" 0
         Assert.Equal(result,  Failure(["Expected character is: 'z' but received '0' at position 0"], 0))
+
+    // parses input till chars in the allowed range
+    [<Fact>]
+    let ``parses input till chars in the allowed range``() =
+        let literal = anyOf ['a'..'z']
+        let digit = anyOf ['0'..'9']
+        let any = orElse literal digit
+        let result = many any "012abc" 0
+        Assert.Equal(result,  Success(['0';'1';'2';'a';'b';'c'], 6))

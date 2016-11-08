@@ -20,12 +20,16 @@ module Parser =
           if String.IsNullOrEmpty(input) then
               Failure (["Input is empty"], pos)
           else
-              let firstChar = input.[pos]
-              if firstChar = charToMatch then
-                  Success(charToMatch, pos+1)
-              else
-                  let errorMessage = sprintf "Expected character is: '%c' but received '%c' at position %i" charToMatch firstChar pos
-                  Failure ([errorMessage], pos)
+              if pos >= input.Length then
+                  Failure (["Position is out of range"], pos)
+              else 
+                  let firstChar = input.[pos]
+                  if firstChar = charToMatch then
+                      Success(charToMatch, pos+1)
+                  else
+                      let errorMessage = sprintf "Expected character is: '%c' but received '%c' at position %i" charToMatch firstChar pos
+                      Failure ([errorMessage], pos)
+              
 
 
     // combinator function that runs two parsers and returns the result as a pair
@@ -105,7 +109,7 @@ module Parser =
                 | Failure (errMsg, f_pos) ->
                     match resultList with
                     | [] -> Failure (errMsg, pos) // if 0 mathes then return failure
-                    | _ -> Success (resultList, pos) // in all other cases - return success with results list
+                    | _ -> Success (List.rev resultList, pos) // in all other cases - return success with results list
             matchElement p input pos resultList
 
     // function that tries to parse any char from the given list
