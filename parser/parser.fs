@@ -6,6 +6,10 @@ type Result<'T> =
 
 type Parser<'T> = string -> int -> Result<'T>
 
+type Value =
+    | Int of int
+    | Literal of char
+
 // mrange: You don't want a specific type for single char parsers. In this case it doesn't matter because it's an alias
 // mrange: A parser is function that given a string and a position optionally produces a value (maybe a char) and a position
 // vlukash: removed
@@ -115,4 +119,3 @@ module Parser =
     // function that tries to parse any char from the given list
     let anyOf (charRange : char list) = 
         charRange |> List.map singleChar |> List.reduce orElse
-

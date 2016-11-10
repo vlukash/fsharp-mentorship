@@ -206,3 +206,25 @@ module SingleCrar =
         let any = orElse literal digit
         let result = many any "012abc" 0
         Assert.Equal(result,  Success(['0';'1';'2';'a';'b';'c'], 6))
+
+    // parser that consumes either a char literal ('c') or a digit (3)
+    [<Fact>]
+    let ``parses that consumes either a char literal or a digit``() =
+        // prepare integer parser
+        let integerConverterFunc (c : char) = Int (int c - int '0') 
+        let digit = anyOf ['0'..'9']
+        let integer = digit |> map integerConverterFunc
+
+        // prepare literal parser
+        let literal = anyOf ['a'..'z'] |> map (fun c -> Literal c)
+
+        // final parser
+        let literalOrDigit = orElse literal integer
+
+        let literaResult = literalOrDigit "abc0" 0
+        let integerResult = literalOrDigit "0abc" 0
+        let unsupportedSymbolRelult = literalOrDigit "#0abc" 0
+
+        Assert.Equal(literaResult,  Success(Literal 'a', 1))
+        Assert.Equal(integerResult,  Success(Int 0, 1))
+        Assert.Equal(unsupportedSymbolRelult,  Failure (["Expected character is: '9' but received '#' at position 0"],0))
