@@ -228,3 +228,14 @@ module SingleCrar =
         Assert.Equal(literaResult,  Success(Literal 'a', 1))
         Assert.Equal(integerResult,  Success(Int 0, 1))
         Assert.Equal(unsupportedSymbolRelult,  Failure (["Expected character is: '9' but received '#' at position 0"],0))
+
+    // KVP parser
+    [<Fact>]
+    let ``parses KVP - value as an Int or String``() =
+        let result_int = kvp "key_01=12345" 0
+        let expected_int = KVP (Map.empty.Add("key_01", Int 12345))
+        Assert.Equal(result_int, Success(expected_int, 12))
+
+        let result_str = kvp "key_01=value" 0
+        let expected_str = KVP (Map.empty.Add("key_01", Str "value"))
+        Assert.Equal(result_str, Success(expected_str, 12))

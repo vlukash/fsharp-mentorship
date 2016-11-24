@@ -9,6 +9,8 @@ type Parser<'T> = string -> int -> Result<'T>
 type Value =
     | Int of int
     | Literal of char
+    | Str of string
+    | KVP of Map<string, Value>
 
 // mrange: You don't want a specific type for single char parsers. In this case it doesn't matter because it's an alias
 // mrange: A parser is function that given a string and a position optionally produces a value (maybe a char) and a position
@@ -33,7 +35,6 @@ module Parser =
                   else
                       let errorMessage = sprintf "Expected character is: '%c' but received '%c' at position %i" charToMatch firstChar pos
                       Failure ([errorMessage], pos)
-              
 
 
     // combinator function that runs two parsers and returns the result as a pair
@@ -119,3 +120,35 @@ module Parser =
     // function that tries to parse any char from the given list
     let anyOf (charRange : char list) = 
         charRange |> List.map singleChar |> List.reduce orElse
+
+    // Digit parser
+    let digit = anyOf ['0'..'9']
+
+    // literal parser
+    let literal = anyOf ['a'..'z'] |> map (fun c -> Literal c)
+
+    // Char parser - any char but not '='
+    let char = orElse (anyOf ['!'..'<']) (anyOf ['>'..'~'])
+
+    let fromTuple ((c1, c2), c3) : Value =
+        let map = Map.empty.Add(c1, c3)
+        KVP map
+
+    // prepare Key parser
+    let key = char |> many |> map (fun clist -> clist |> List.toArray |> (fun s -> new System.String(s)))
+
+    // '=' parser
+    let equal = singleChar '='
+
+    // prepare String parser
+    let string = char |> many |> map (fun clist -> clist |> List.toArray |> (fun s -> Str (new System.String(s))))
+    // Int parser
+    let integer = digit |> many |> map (fun clist -> clist |> List.toArray |> (fun s -> new System.String(s))) |> map (fun c -> Int (int c))
+
+    // prepare Value parser - String or Int
+    let value = orElse integer string
+
+    let kvpTuple = pair (pair key equal) value
+
+    // final KVP parser
+    let kvp = kvpTuple |> map fromTuple
