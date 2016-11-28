@@ -152,3 +152,48 @@ module Parser =
 
     // final KVP parser
     let kvp = kvpTuple |> map fromTuple
+
+    
+    // return
+    // val return_: 'T -> Parser<'T>
+    let return_ value : Parser<'T> = 
+        let intern input pos = 
+            Success (value, pos)
+        intern
+
+    // bind
+    // val bind: Parser<'T> -> ('T -> Parser<'U>) -> Parser<'U>
+    let bind (parser : Parser<'T>) (u:'T -> Parser<'U>) : Parser<'U> =
+        let intern input pos =
+            let result = parser input pos
+            match result with
+                | Success(value, pos) ->
+                    u value input pos
+                    //Success (value, pos)
+                | Failure (errMsg, f_pos) ->
+                    Failure (errMsg, f_pos)
+        intern
+
+    let (>>=) f a = bind f a
+
+    type Builder() = 
+        member x.Bind(f, a) = 
+            bind f a
+
+        member x.Return(f) = 
+            return_ f
+
+    let parser = Builder()
+
+    let p = parser {
+        let! t = singleChar 't'
+        //code
+        let! e = singleChar 'e'
+        return t, e
+    }
+
+    let p2 = (singleChar 't') >>= (fun t -> singleChar 'e' >>= (fun e -> return_ (t, e)))
+    
+    let res = p "test" 0
+    let res2 = p2 "test" 0
+
