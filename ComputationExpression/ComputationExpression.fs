@@ -6,7 +6,7 @@ type Result<'T> =
 
 type DivideBy<'T> = 'T -> Result<'T>
 
-module Result1 = 
+module Result = 
     
     let log value = printfn "value is %A" value
 
@@ -19,20 +19,19 @@ module Result1 =
         intern
 
     // M<'T> -> ('T -> M<'U>) -> M<'U>
-    let bind_ (div: DivideBy<'T>) (f: 'T -> DivideBy<'U>) : DivideBy<'U> =
-        let intern top = 
-            let res = div top
-            match res with
+    let bind_ (div: Result<'T>) (f: 'T -> Result<'U>) : Result<'U> =
+        let intern = 
+            match div with
                 | Ok value -> 
                     log value
-                    f top value
+                    f value
                 | Bad err -> 
                     Bad err
         intern
         
     // 'T -> M<'T>
-    let return_ (x : 'T) : DivideBy<'T> = 
-        let intern top = 
+    let return_ (x : 'T) : Result<'T> = 
+        let intern = 
             Ok x
         intern
 
@@ -48,15 +47,12 @@ module Result1 =
     let res = new Builder()
 
     let div = res {
-        let! first =  divideBy 5
-        let! second =  divideBy 2
-        let! third =  divideBy 3
+        let! first =  60 |> divideBy 5
+        let! second =  first |> divideBy 2
+        let! third =  second |> divideBy 3
         return third
     }
 
-    let d = div 60
+    let div2 = (60 |> divideBy 5 ) >>= (fun t -> t |> divideBy 2 >>= (fun e -> return_ (e)))
 
-    let div2 = (divideBy 5) >>= (fun t -> divideBy 2 >>= (fun e -> return_ (e)))
-
-    let d2 = div2 60
 
