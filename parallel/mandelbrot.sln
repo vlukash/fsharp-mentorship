@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "mandelbrot", "mandelbrot.fsproj", "{48A2D57D-4C54-4121-A209-C8503A23BAB3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{3392D284-2491-4116-92B0-9460B8F70C87}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{48A2D57D-4C54-4121-A209-C8503A23BAB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48A2D57D-4C54-4121-A209-C8503A23BAB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48A2D57D-4C54-4121-A209-C8503A23BAB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48A2D57D-4C54-4121-A209-C8503A23BAB3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
