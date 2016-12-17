@@ -12,6 +12,7 @@ open FSharp.ViewModule.Validation
 open FsXaml
 
 open Mandelbrot
+open MandelbrotTypes
 
 type MainView = XAML<"MainWindow.xaml", true>
 

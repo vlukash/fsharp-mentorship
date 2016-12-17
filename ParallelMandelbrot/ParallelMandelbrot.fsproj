@@ -51,7 +51,9 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="mandelbrot.fs" />
+    <Compile Include="MandelbrotTypes.fs" />
+    <Compile Include="SingleThreaded.fs" />
+    <Compile Include="Mandelbrot.fs" />
     <Resource Include="MainWindow.xaml" />
     <Compile Include="MainWindow.xaml.fs" />
     <Resource Include="App.xaml" />
