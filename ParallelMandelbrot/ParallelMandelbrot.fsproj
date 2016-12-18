@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="MandelbrotTypes.fs" />
     <Compile Include="SingleThreaded.fs" />
+    <Compile Include="AkkaNET.fs" />
     <Compile Include="Mandelbrot.fs" />
     <Resource Include="MainWindow.xaml" />
     <Compile Include="MainWindow.xaml.fs" />

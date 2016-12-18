@@ -25,13 +25,16 @@ type MainViewModel() as self =
     let queue = new ConcurrentQueue<Line> ()
     let stopwatch = new Stopwatch ()
 
+    //let computationType = SingleThreadType
+    let computationType = AkkaNETType
+
     let render() =
         self.Info <- "Rendering"
         self.ImageSource <- wBitmap
 
         stopwatch.Restart(); 
 
-        Mandelbrot.generateMandelBrotData queue
+        Mandelbrot.generateMandelBrotData queue computationType
 
         wBitmap.Lock()
         try
