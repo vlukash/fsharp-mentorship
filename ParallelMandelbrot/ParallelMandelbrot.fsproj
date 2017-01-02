@@ -10,8 +10,9 @@
     <RootNamespace>ParallelMandelbrot</RootNamespace>
     <AssemblyName>ParallelMandelbrot</AssemblyName>
     <targetframeworkversion>v4.5</targetframeworkversion>
-    <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <Name>ParallelMandelbrot</Name>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
