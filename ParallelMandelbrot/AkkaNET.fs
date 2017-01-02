@@ -26,7 +26,6 @@ module AkkaNET =
         let context = Worker.Context
 
         override x.OnReceive message =
-            //let tid = Threading.Thread.CurrentThread.ManagedThreadId
             match message with
             | :? WorkerMsg as msg -> 
                 match msg with
@@ -43,9 +42,14 @@ module AkkaNET =
                     let requestTaskMsg : SupervisorMsg = RequestTask context.Self
                     context.Parent <! requestTaskMsg
             | _ ->  failwith "unknown message"
+        override x.PostStop () =
+            ()
 
-    type Supervisor(taskQueue : ConcurrentQueue<ParallelTask>, queue: ConcurrentQueue<Line>) =
+    type Supervisor(taskQueue : ConcurrentQueue<ParallelTask>, enqueue: Line -> unit, completed : unit -> unit) =
         inherit Actor()
+
+        // Active workers counter
+        let mutable activeWorkersCount = 4
 
         // Init child actors
         let context = Supervisor.Context
@@ -56,11 +60,15 @@ module AkkaNET =
                 context.ActorOf(Props(typedefof<Worker>, properties)))
 
         override x.PreStart () = 
-            // initialize workers my sending a message to each worker
-            for id in [0 .. 3] do
+            // initialize workers by sending a message to each worker
+            // without brackets - range - better performance
+            for id in 0 .. 3 do
                 let message = WorkerMsg.InitWorker
                 id |> List.nth workers <! message
             ()
+
+            // this loop can be changet to rec implementation
+            // ToDO: rewrite
 
         override x.OnReceive message =
             match message with
@@ -71,24 +79,20 @@ module AkkaNET =
                     if success then 
                         let task : WorkerMsg = CalculateBlock res
                         actorRef <! task
+                    else 
+                        //shutdown current worker
+                        actorRef <! PoisonPill.Instance
+                        activeWorkersCount <- activeWorkersCount - 1
+                        if activeWorkersCount = 0 then
+                            completed ()
                 | CalculatedResult result ->
                     let line : Line = result
-                    queue.Enqueue(line)
+                    enqueue line
             | _ ->  failwith "unknown message"
 
     ///////////////
-    let run taskQueue queue = 
+    let run taskQueue (enqueue: Line -> unit) (completed : unit -> unit) = 
         let system = ActorSystem.Create("Akka")
         
-        let supervisor = system.ActorOf(Props(typedefof<Supervisor>, [| (taskQueue) :> obj; (queue) :> obj|] ))
-
-        //val q : ConcurrentQueue<Line>
-        
-        Threading.Thread.Sleep(1000)
-
-        //system.Shutdown()
-
-//    let addTask ix tx ty mx my maxIter imageWidth = 
-//        let task : ParallelTask = (ix, tx, ty, mx, my, maxIter, imageWidth)
-//        taskQueue.Enqueue(task)
-
+        let supervisor = system.ActorOf(Props(typedefof<Supervisor>, [| (taskQueue) :> obj; (enqueue) :> obj; (completed) :> obj|] ))
+        ()

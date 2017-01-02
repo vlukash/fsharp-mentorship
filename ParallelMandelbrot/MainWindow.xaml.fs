@@ -3,6 +3,8 @@
 open System
 open System.Collections.Concurrent
 open System.Diagnostics
+open System.Threading
+open System.Threading.Tasks
 open System.Windows
 open System.Windows.Media
 open System.Windows.Media.Imaging
@@ -19,11 +21,29 @@ type MainView = XAML<"MainWindow.xaml", true>
 type MainViewModel() as self = 
     inherit ViewModelBase()
 
+    let stopwatch = 
+        let sw = new Stopwatch()
+        sw.Start()
+        sw
+
     let info = self.Factory.Backing(<@ self.Info @>, "")
     let imageSource = self.Factory.Backing(<@ self.ImageSource @>, null)
     let mutable wBitmap : WriteableBitmap = new WriteableBitmap(Mandelbrot.imageWidth, Mandelbrot.imageHeight, 96.0, 96.0, PixelFormats.Bgr24, null)
-    let queue = new ConcurrentQueue<Line> ()
-    let stopwatch = new Stopwatch ()
+
+    let context = SynchronizationContext.Current
+
+    let runInUIThread (a : unit -> unit) =
+        context.Post (SendOrPostCallback (fun _ -> a ()), null)
+
+    let updateBitmap (line : Line) =
+        wBitmap.Lock()
+        try
+            let lineNo = fst line
+            let pixels = snd line
+            if (lineNo >= 0 &&  lineNo < Mandelbrot.imageHeight &&  pixels.Length/3 = Mandelbrot.imageHeight) then
+                wBitmap.WritePixels(new Int32Rect (lineNo, 0, 1, Mandelbrot.imageHeight), pixels, 3, 0)
+        finally
+            wBitmap.Unlock()
 
     //let computationType = SingleThreadType
     let computationType = AkkaNETType
@@ -32,23 +52,17 @@ type MainViewModel() as self =
         self.Info <- "Rendering"
         self.ImageSource <- wBitmap
 
-        stopwatch.Restart(); 
+        let enqueue (line : Line) =
+            runInUIThread (fun () -> updateBitmap line)
 
-        Mandelbrot.generateMandelBrotData queue computationType
+        let before = stopwatch.ElapsedMilliseconds
 
-        wBitmap.Lock()
-        try
-            let mutable line : Line = (0, Array.zeroCreate 10)
-            while (queue.TryDequeue (&line)) do
-                let lineNo = fst line
-                let pixels = snd  line
-                if (lineNo >= 0 &&  lineNo < Mandelbrot.imageHeight &&  pixels.Length/3 = Mandelbrot.imageHeight) then
-                    wBitmap.WritePixels(new Int32Rect (lineNo, 0, 1, Mandelbrot.imageHeight), pixels, 3, 0)
-        finally
-            wBitmap.Unlock()
-            stopwatch.Stop()
+        let completed () =
+            let now = stopwatch.ElapsedMilliseconds
+            let diff = now - before
+            runInUIThread ( fun() -> self.Info <- (sprintf "Done. Time: %i ms" diff))
 
-        self.Info <- (sprintf "Done. Time: %i ms" stopwatch.ElapsedMilliseconds)
+        Task.Factory.StartNew (Action (fun () -> Mandelbrot.generateMandelBrotData computationType enqueue completed), TaskCreationOptions.LongRunning) |> ignore 
 
     member self.Info with get() = info.Value 
                      and set value = info.Value  <- value
