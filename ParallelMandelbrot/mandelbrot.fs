@@ -12,11 +12,11 @@ module Mandelbrot =
     let imageWidth  = 2048
     let imageHeight = 2048
 
-    let centerX     = 0.001643721971153
+    let centerX     = 0.001643721972268
     let centerY     = 0.822467633298876
 
-    let zoomX       = 0.000000000010
-    let zoomY       = 0.000000000010
+    let zoomX       = 0.000000000008
+    let zoomY       = 0.000000000008
 
     let taskQueue = new ConcurrentQueue<ParallelTask> ()
     let generateMandelBrotData (computationType : ComputationType) (enqueue: Line -> unit) (completed : unit -> unit) = 
@@ -32,20 +32,9 @@ module Mandelbrot =
                     enqueue line
                 | AkkaNETType ->
                     // prepare queue of tasks for Akka workers
-                    //AkkaNET.addTask ix tx ty mx my maxIter imageWidth 
                     let task : ParallelTask = (ix, tx, ty, mx, my, maxIter, imageWidth)
                     taskQueue.Enqueue(task)
 
         if computationType = AkkaNETType then
             AkkaNET.run taskQueue enqueue completed
         else completed ()
-
-// TODO - add compleated method to the run function and remove this while loop
-
-        // completed runs on UI thread
-        //while queue.Count <> 2048 do
-        //    ()
-        
-        //completed ()
-        //()
-

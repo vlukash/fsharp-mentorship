@@ -12,6 +12,8 @@ module AkkaNET =
 
     open SingleThreaded
 
+    let threadsCount = 4
+
     type WorkerMsg = 
         | InitWorker
         | CalculateBlock of ParallelTask
@@ -49,26 +51,25 @@ module AkkaNET =
         inherit Actor()
 
         // Active workers counter
-        let mutable activeWorkersCount = 4
+        let mutable activeWorkersCount = 0
 
         // Init child actors
         let context = Supervisor.Context
         let workers = 
-            [0 .. 3]
+            [0 .. (threadsCount - 1)]
             |> List.map(fun id ->   
                 let properties = [| id :> obj |] 
                 context.ActorOf(Props(typedefof<Worker>, properties)))
 
         override x.PreStart () = 
             // initialize workers by sending a message to each worker
-            // without brackets - range - better performance
-            for id in 0 .. 3 do
+            let rec initWorkers (count : int) =
                 let message = WorkerMsg.InitWorker
-                id |> List.nth workers <! message
-            ()
-
-            // this loop can be changet to rec implementation
-            // ToDO: rewrite
+                if count >= 0 then
+                    count |> List.nth workers <! message
+                    activeWorkersCount <- activeWorkersCount + 1 
+                    initWorkers (count - 1)
+            initWorkers (threadsCount - 1) 
 
         override x.OnReceive message =
             match message with
@@ -90,9 +91,7 @@ module AkkaNET =
                     enqueue line
             | _ ->  failwith "unknown message"
 
-    ///////////////
     let run taskQueue (enqueue: Line -> unit) (completed : unit -> unit) = 
         let system = ActorSystem.Create("Akka")
-        
         let supervisor = system.ActorOf(Props(typedefof<Supervisor>, [| (taskQueue) :> obj; (enqueue) :> obj; (completed) :> obj|] ))
         ()

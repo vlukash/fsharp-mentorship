@@ -3,25 +3,18 @@
 module SingleThreaded = 
     open System
     open MandelbrotTypes
+     
+    let norm (ix : float) (iy : float) : float =
+        (ix * ix + iy * iy)
 
-    let mandelbrot (x : double) (y : double) (iter : int) =
-        let mutable ix = x;
-        let mutable iy = y;
-
-        let mutable i = 0;
-
-        // Zn+1 = Zn^2 + C
-        while (i < iter) && ((ix * ix + iy * iy) < 4.0) do
-            i <- i+1
-            let tx = ix * ix - iy * iy + x;
-            iy <- 2.0 * ix * iy + y;
-            ix <- tx;
-        
-        // Zn+1 = Zn^2 + C
-        if i = iter then 
-            true 
-        else
-            false
+    let rec mandelbrotIterator (x : double) (y : double) (cx : double) (cy : double) (iter : int) =
+        if (norm x y) > 4.0 then false else
+            match iter with
+                | 0 -> true
+                | iter -> 
+                    let ix = x * x - y * y + cx
+                    let iy = 2.0 * x * y + cy 
+                    mandelbrotIterator ix iy cx cy (iter-1)
 
     // generate 1 row of data
     let generateRowData ix tx ty mx my maxIter (rowLength : int) : Line = 
@@ -31,7 +24,7 @@ module SingleThreaded =
             let x = tx * float ix + mx
             let y = ty * float iy + my
 
-            if (mandelbrot x y maxIter) then
+            if (mandelbrotIterator x y x y maxIter) then
                 lineData.[3 * iy + 0] <- (byte)0
                 lineData.[3 * iy + 1] <- (byte)0
                 lineData.[3 * iy + 2] <- (byte)0
