@@ -7,8 +7,9 @@ module Mandelbrot =
     open MandelbrotTypes
     open SingleThreaded
     open AkkaNET
+    open ParallelForGPU
 
-    let maxIter     = 1200
+    let maxIter     = 9200
     let imageWidth  = 2048
     let imageHeight = 2048
 
@@ -34,7 +35,15 @@ module Mandelbrot =
                     // prepare queue of tasks for Akka workers
                     let task : ParallelTask = (ix, tx, ty, mx, my, maxIter, imageWidth)
                     taskQueue.Enqueue(task)
+                | ParallelForGPUType ->
+                    let task : ParallelTask = (ix, tx, ty, mx, my, maxIter, imageWidth)
+                    taskQueue.Enqueue(task)
 
-        if computationType = AkkaNETType then
-            AkkaNET.run taskQueue enqueue completed
-        else completed ()
+        
+        match computationType with
+            | SingleThreadType ->
+                completed ()
+            | AkkaNETType ->
+                AkkaNET.run taskQueue enqueue completed
+            | ParallelForGPUType ->
+                ParallelForGPU.run imageWidth imageHeight taskQueue enqueue completed              

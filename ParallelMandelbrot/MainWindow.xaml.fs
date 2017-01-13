@@ -46,7 +46,8 @@ type MainViewModel() as self =
             wBitmap.Unlock()
 
     //let computationType = SingleThreadType
-    let computationType = AkkaNETType
+    //let computationType = AkkaNETType
+    let computationType = ParallelForGPUType
 
     let render() =
         self.Info <- "Rendering"
