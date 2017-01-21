@@ -13,11 +13,11 @@ module Mandelbrot =
     let imageWidth  = 2048
     let imageHeight = 2048
 
-    let centerX     = 0.001643721972268
-    let centerY     = 0.822467633298876
+    let centerX     = -0.5
+    let centerY     = 0.05
 
-    let zoomX       = 0.000000000008
-    let zoomY       = 0.000000000008
+    let zoomX       = 2.0
+    let zoomY       = 2.0
 
     let taskQueue = new ConcurrentQueue<ParallelTask> ()
     let generateMandelBrotData (computationType : ComputationType) (enqueue: Line -> unit) (completed : unit -> unit) = 
