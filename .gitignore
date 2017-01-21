@@ -1,0 +1,4 @@
+*.db
+*.opendb
+Debug/
+Release/
